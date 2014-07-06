@@ -27,19 +27,18 @@ object Projects extends Controller {
   }
 
   def get(id: Long) = Action { request =>
-    find(Some(id)) match {
-      case Some(project) => Ok(Json.toJson(project))
-      case None => BadRequest("Invalid resource")
-    }
+    val project = find(id)
+    if (project.isEmpty) BadRequest("Invalid resource")
+    else Ok(Json.toJson(project))
   }
 
   def put(id: Long) = Action(parse.json) { request =>
     request.body.validate[Project].map {
       case project =>
-        find(project.id) match {
+        find(project.id.get) match {
           case Some(p) =>
             val update = Project(p.id, p.userId, p.name, p.description, p.createdOn, p.retiredOn)
-            Ok (Json.toJson (update) )
+            Ok(Json.toJson(update))
           case None => BadRequest("Invalid resource")
         }
     }.recoverTotal {
@@ -49,10 +48,10 @@ object Projects extends Controller {
 
   def patch(id: Long) = Action(parse.json) { request =>
     request.body.validate[(String)].map { retiredOn =>
-      find(Some(id)) match {
+      find(id) match {
         case Some(project) =>
-          val update = Project(project.id, project.userId, project.name, project.description, project.createdOn, Some(format.parseDateTime(retiredOn).toDate))
-          Ok(Json.toJson(update))
+          val patched = Project(project.id, project.userId, project.name, project.description, project.createdOn, Some(format.parseDateTime(retiredOn).toDate))
+          Ok(Json.toJson(patched))
         case None => BadRequest("Invalid resource")
       }
     }.recoverTotal {
@@ -60,9 +59,9 @@ object Projects extends Controller {
     }
   }
 
-  private def find(id: Option[Long]): Option[Project] =
-    if (id == Some(12345678))
-      Option(Project(Some(12345678), 12345678, "The One Line a Day API", "An API is born", new Date(), None))
+  private def find(id: Long): Option[Project] =
+    if (id == 12345678)
+      Option(Project(Some(id), 12345678, "The One Line a Day API", "An API is born", new Date(), None))
     else None
 
 }
