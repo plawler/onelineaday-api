@@ -12,4 +12,6 @@ libraryDependencies ++= Seq(
   cache,
   ws,
   "postgresql" % "postgresql" % "9.1-901.jdbc4"
+  ,
+  "com.fasterxml.uuid" % "java-uuid-generator" % "3.1.3"
 )

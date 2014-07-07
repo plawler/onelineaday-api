@@ -14,7 +14,7 @@ import play.api.mvc.{Action, Controller}
 object Projects extends Controller {
 
   // https://stackoverflow.com/questions/17040852/json-writes-in-play-2-1-1
-//  implicit val projectJson = Json.format[Project]
+  // implicit val projectJson = Json.format[Project]
   implicit val projectPatch = (__ \ "retiredOn").read[String]
 
   val format = DateTimeFormat.forPattern("yyyy-MM-dd")
@@ -27,13 +27,13 @@ object Projects extends Controller {
     }
   }
 
-  def get(id: Long) = Action { request =>
+  def get(id: String) = Action { request =>
     val project = find(id)
     if (project.isEmpty) BadRequest("Invalid resource")
     else Ok(Json.toJson(project))
   }
 
-  def put(id: Long) = Action(parse.json) { request =>
+  def put(id: String) = Action(parse.json) { request =>
     request.body.validate[Project].map {
       case project =>
         find(project.id.get) match {
@@ -47,7 +47,7 @@ object Projects extends Controller {
     }
   }
 
-  def patch(id: Long) = Action(parse.json) { request =>
+  def patch(id: String) = Action(parse.json) { request =>
     request.body.validate[(String)].map { retiredOn =>
       find(id) match {
         case Some(project) =>
@@ -60,9 +60,9 @@ object Projects extends Controller {
     }
   }
 
-  private def find(id: Long): Option[Project] =
-    if (id == 12345678)
-      Option(Project(Some(id), 12345678, "The One Line a Day API", "An API is born", new Date(), None))
+  private def find(id: String): Option[Project] =
+    if (id == "d9227b5f-05e6-11e4-9180-cd98919f6869")
+      Option(Project(Some("d9227b5f-05e6-11e4-9180-cd98919f6869"), "d9220627-05e6-11e4-9180-6fad63942f7f", "The One Line a Day API", "An API is born", new Date(), None))
     else None
 
 }

@@ -10,9 +10,9 @@ GET          /assets/*file               controllers.Assets.at(path="/public", f
 
 #Projects
 POST         /api/v1/projects            controllers.Projects.post
-GET          /api/v1/projects/:id        controllers.Projects.get(id: Long)
-PUT          /api/v1/projects/:id        controllers.Projects.put(id: Long)
-PATCH        /api/v1/projects/:id        controllers.Projects.patch(id: Long)
+GET          /api/v1/projects/:id        controllers.Projects.get(id: String)
+PUT          /api/v1/projects/:id        controllers.Projects.put(id: String)
+PATCH        /api/v1/projects/:id        controllers.Projects.patch(id: String)
 
 
 
