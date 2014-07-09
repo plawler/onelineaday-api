@@ -9,25 +9,21 @@ import java.text.SimpleDateFormat
 // https://gist.github.com/opensas/2833989
 object DateFormatter {
 
-  implicit object JsonDateFormatter extends Format[Option[Date]] {
+  implicit object JsonDateFormatter extends Format[Date] {
 
     val dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss'Z'")
 
-    def writes(date: Option[Date]): JsValue = {
-      toJson(
-        date.map(
-          date => dateFormat.format(date)
-        ).getOrElse(
-            ""
-          )
-      )
+    def writes(date: Date): JsValue = {
+      if (date != null)
+        toJson(dateFormat.format(date))
+      else JsNull
     }
 
-    def reads(j: JsValue): JsResult[Option[Date]] = {
+    def reads(j: JsValue): JsResult[Date] = {
       try {
-        JsSuccess(Some(dateFormat.parse(j.as[String])))
+        JsSuccess(dateFormat.parse(j.as[String]))
       } catch {
-        case e: Exception => JsSuccess(None)
+        case e: Exception => JsSuccess(null)
       }
     }
 

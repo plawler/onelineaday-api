@@ -2,9 +2,12 @@ package controllers
 
 import java.util.Date
 
+import com.fasterxml.uuid.Generators
 import formatters.json.DateFormatter.JsonDateFormatter
 import models.Project
 import org.joda.time.format.DateTimeFormat
+import play.api.Logger
+import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import play.api.mvc.{Action, Controller}
 
@@ -13,15 +16,22 @@ import play.api.mvc.{Action, Controller}
  */
 object Projects extends Controller {
 
+  val logger = Logger(this.getClass)
+
   // https://stackoverflow.com/questions/17040852/json-writes-in-play-2-1-1
   // implicit val projectJson = Json.format[Project]
+
   implicit val projectPatch = (__ \ "retiredOn").read[String]
 
   val format = DateTimeFormat.forPattern("yyyy-MM-dd")
 
   def post = Action(parse.json) { request =>
     request.body.validate[Project].map {
-      case project => Ok(Json.toJson(project))
+      case p =>
+        val projectId = Generators.timeBasedGenerator().generate().toString
+        val project = Project(Some(projectId), p.userId, p.name, p.description, p.createdOn, None)
+        Project.create(project)
+        Ok(Json.toJson(project))
     }.recoverTotal {
       e => BadRequest("Error:" + JsError.toFlatJson(e))
     }
