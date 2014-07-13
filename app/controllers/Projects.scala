@@ -38,9 +38,15 @@ object Projects extends Controller {
   }
 
   def get(id: String) = Action { request =>
-    val project = find(id)
+    val project = Project.find(id)
     if (project.isEmpty) BadRequest("Invalid resource")
     else Ok(Json.toJson(project))
+  }
+
+  def all() = Action { request =>
+    val projects = for (project <- Project.findAll("1234")
+    ) yield Json.toJson(project)
+    Ok(Json.arr(projects))
   }
 
   def put(id: String) = Action(parse.json) { request =>

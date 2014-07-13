@@ -10,7 +10,7 @@ import org.specs2.runner.JUnitRunner
 import play.api.libs.json.{JsString, Json}
 
 import play.api.test.Helpers._
-import play.api.test.{WithApplication, Helpers, FakeHeaders, FakeRequest}
+import play.api.test._
 
 
 /**
@@ -24,7 +24,7 @@ class ProjectsSpec extends Specification {
   "Project controller" should {
 
 //    https://stackoverflow.com/questions/13570125/why-test-method-fails
-    "POST a project" in new WithApplication {
+    "POST a project" in new WithApplication(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
       val id = Generators.timeBasedGenerator().generate().toString
       val json = Json.toJson(
         Project(Some(id), userId, "Test Project", "Test project description", new Date(), None)
@@ -37,16 +37,25 @@ class ProjectsSpec extends Specification {
       contentType(result) must beSome("application/json") // be(Some(...)) failed for some fucking reason. sigh.
     }
 
-    "GET a project" in {
-      val id = "d9227b5f-05e6-11e4-9180-cd98919f6869"
+    "GET a project" in new WithApplication(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+      val id = Generators.timeBasedGenerator().generate().toString
+      Project.create(Project(Some(id), userId, "Test the GET", "Test the GET description", new Date(), None))
+
       val request = FakeRequest(GET, s"/api/v1/projects/$id")
       val result = controllers.Projects.get(id)(request)
       status(result) must equalTo(OK)
-      contentType(result) must beSome("application/json") // be(Some(...)) failed for some fucking reason. sigh.
-      contentAsString(result) must contain("\"id\":\"d9227b5f-05e6-11e4-9180-cd98919f6869\"")
+      contentType(result) must beSome("application/json")
+      contentAsString(result) must contain("\"id\":\"" + id + "\"")
     }
 
-    "PUT a project" in {
+    "Get all projects" in new WithApplication(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+      val request = FakeRequest(GET, "/api/v1/projects")
+      val result = controllers.Projects.all()(request)
+      status(result) must equalTo(OK)
+      contentType(result) must beSome("application/json")
+    }
+
+    "PUT a project" in new WithApplication(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
       val id = "d9227b5f-05e6-11e4-9180-cd98919f6869"
       val json = Json.toJson(
         Project(Some(id), userId, "Test Project", "Test project description updated", new Date(), None)
@@ -59,7 +68,7 @@ class ProjectsSpec extends Specification {
       contentAsString(result) must contain("\"description\":\"Test project description updated\"")
     }
 
-    "PATCH a project (for retiring)" in {
+    "PATCH a project (for retiring)" in new WithApplication(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
       val id = "d9227b5f-05e6-11e4-9180-cd98919f6869"
       val json = Json.obj("retiredOn" -> JsString("2014-07-06"))
       val request = FakeRequest(PUT, "/api/v1/projects/12345678", FakeHeaders(), json)

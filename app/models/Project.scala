@@ -24,6 +24,7 @@ case class ProjectModel(id: UUID, userId: UUID, name: String, description: Strin
 }
 
 object Project {
+
   //  http://heydev.com/2013/11/22/play-rest-api-contd/
 
   // http://eng.kifi.com/working-with-json-in-play-2-1/
@@ -47,16 +48,16 @@ object Project {
     (__ \ "retiredOn").writeNullable[Date]
   )(unlift(Project.unapply))
 
-//  val projectParser = {
-//      get[UUID]("id") ~
-//      get[UUID]("user_id") ~
-//      get[String]("name") ~
-//      get[String]("description") ~
-//      get[Date]("created_on") ~
-//      get[Option[Date]]("retired_on") map {
-//      case id~userId~name~description~created_on~retiredOn => ProjectModel(id, userId, name, description, created_on, retiredOn)
-//    }
-//  }
+  val projectParser = {
+      get[UUID]("id") ~
+      get[UUID]("user_id") ~
+      get[String]("name") ~
+      get[String]("description") ~
+      get[Date]("created_on") ~
+      get[Option[Date]]("retired_on") map {
+      case id~userId~name~description~created_on~retiredOn => Project(Some(id.toString), userId.toString, name, description, created_on, retiredOn)
+    }
+  }
 
   def create(project: Project) = DB.withConnection { implicit conn =>
     SQL(
@@ -65,9 +66,32 @@ object Project {
       values ({id}, {name}, {description}, {created_on}, {userId})
       """
     ).on(
-        'id -> UUID.fromString(project.id.get), 'name -> project.name, 'description -> project.description, 'created_on -> project.createdOn,
-        'userId -> UUID.fromString(project.userId)
+        'id -> project.id.get, 'name -> project.name, 'description -> project.description, 'created_on -> project.createdOn,
+        'userId -> project.userId
       ).executeUpdate
+  }
+
+  def find(id: String): Option[Project] = DB.withConnection { implicit conn =>
+      SQL("select * from projectz where id = {id}").on('id -> id).as(projectParser.singleOpt)
+  }
+
+  def update(project: Project) = DB.withConnection { implicit conn =>
+    SQL(
+      """
+      update projectz set name = {name}, description = {description}
+      where id = {id}
+      """
+    ).on(
+        'name -> project.name, 'description -> project.description, 'id -> project.id
+      ).executeUpdate
+  }
+
+  def findAll(userId: String): Seq[Project] = DB.withConnection { implicit conn =>
+    SQL(
+      """
+        select * from projectz where user_id = {userId} order by created_on desc
+        """
+    ).on('userId -> userId).as(projectParser *)
   }
 
 }
