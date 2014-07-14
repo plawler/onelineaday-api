@@ -66,13 +66,13 @@ object Project {
       values ({id}, {name}, {description}, {created_on}, {userId})
       """
     ).on(
-        'id -> project.id.get, 'name -> project.name, 'description -> project.description, 'created_on -> project.createdOn,
-        'userId -> project.userId
+        'id -> UUID.fromString(project.id.get), 'name -> project.name, 'description -> project.description, 'created_on -> project.createdOn,
+        'userId -> UUID.fromString(project.userId)
       ).executeUpdate
   }
 
   def find(id: String): Option[Project] = DB.withConnection { implicit conn =>
-      SQL("select * from projectz where id = {id}").on('id -> id).as(projectParser.singleOpt)
+      SQL("select * from projectz where id = {id}").on('id -> UUID.fromString(id)).as(projectParser.singleOpt)
   }
 
   def update(project: Project) = DB.withConnection { implicit conn =>
@@ -82,16 +82,24 @@ object Project {
       where id = {id}
       """
     ).on(
-        'name -> project.name, 'description -> project.description, 'id -> project.id
+        'name -> project.name, 'description -> project.description, 'id -> UUID.fromString(project.id.get)
       ).executeUpdate
   }
 
   def findAll(userId: String): Seq[Project] = DB.withConnection { implicit conn =>
     SQL(
       """
-        select * from projectz where user_id = {userId} order by created_on desc
+        select * from projectz order by created_on desc
         """
-    ).on('userId -> userId).as(projectParser *)
+    ).as(projectParser.*)
   }
+
+//  def retire() = DB.withConnection { implicit conn =>
+//    SQL(
+//      """
+//      update
+//      """
+//    )
+//  }
 
 }

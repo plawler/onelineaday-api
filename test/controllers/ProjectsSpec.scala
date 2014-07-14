@@ -56,23 +56,28 @@ class ProjectsSpec extends Specification {
     }
 
     "PUT a project" in new WithApplication(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
-      val id = "d9227b5f-05e6-11e4-9180-cd98919f6869"
+      val id = Generators.timeBasedGenerator().generate().toString
+      Project.create(Project(Some(id), userId, "Test the PUT", "Test the PUT description", new Date(), None))
+
       val json = Json.toJson(
-        Project(Some(id), userId, "Test Project", "Test project description updated", new Date(), None)
+        Project(Some(id), userId, "Test the PUT", "Test the PUT description updated", new Date(), None)
       )(models.Project.writes)
 
-      val request = FakeRequest(PUT, "/api/v1/projects/12345678", FakeHeaders(), json)
+      val request = FakeRequest(PUT, s"/api/v1/projects/$id", FakeHeaders(), json)
       val result = controllers.Projects.put(userId)(request)
 
       contentType(result) must beSome("application/json")
-      contentAsString(result) must contain("\"description\":\"Test project description updated\"")
+      contentAsString(result) must contain("\"description\":\"Test the PUT description updated\"")
     }
 
     "PATCH a project (for retiring)" in new WithApplication(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
-      val id = "d9227b5f-05e6-11e4-9180-cd98919f6869"
+      val id = Generators.timeBasedGenerator().generate().toString
+      Project.create(Project(Some(id), userId, "Test the PUT", "Test the PUT description", new Date(), None))
+
       val json = Json.obj("retiredOn" -> JsString("2014-07-06"))
-      val request = FakeRequest(PUT, "/api/v1/projects/12345678", FakeHeaders(), json)
+      val request = FakeRequest(PUT, s"/api/v1/projects/$id", FakeHeaders(), json)
       val result = controllers.Projects.patch(id)(request)
+
       status(result) must equalTo(OK)
       contentType(result) must beSome("application/json")
       contentAsString(result) must contain("\"retiredOn\":\"2014-07-06T12:00:00Z\"")

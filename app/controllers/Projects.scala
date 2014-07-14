@@ -26,8 +26,7 @@ object Projects extends Controller {
   val format = DateTimeFormat.forPattern("yyyy-MM-dd")
 
   def post = Action(parse.json) { request =>
-    request.body.validate[Project].map {
-      case p =>
+    request.body.validate[Project].map { p =>
         val projectId = Generators.timeBasedGenerator().generate().toString
         val project = Project(Some(projectId), p.userId, p.name, p.description, p.createdOn, None)
         Project.create(project)
@@ -52,10 +51,11 @@ object Projects extends Controller {
   def put(id: String) = Action(parse.json) { request =>
     request.body.validate[Project].map {
       case project =>
-        find(project.id.get) match {
+        Project.find(project.id.get) match {
           case Some(p) =>
-            val update = Project(p.id, p.userId, project.name, project.description, p.createdOn, p.retiredOn)
-            Ok(Json.toJson(update))
+            val updated = Project(p.id, p.userId, project.name, project.description, p.createdOn, p.retiredOn)
+            Project.update(updated)
+            Ok(Json.toJson(updated))
           case None => BadRequest("Invalid resource")
         }
     }.recoverTotal {
@@ -65,9 +65,10 @@ object Projects extends Controller {
 
   def patch(id: String) = Action(parse.json) { request =>
     request.body.validate[(String)].map { retiredOn =>
-      find(id) match {
+      Project.find(id) match {
         case Some(project) =>
           val patched = Project(project.id, project.userId, project.name, project.description, project.createdOn, Some(format.parseDateTime(retiredOn).toDate))
+          Project.update(patched)
           Ok(Json.toJson(patched))
         case None => BadRequest("Invalid resource")
       }
@@ -75,10 +76,5 @@ object Projects extends Controller {
       e => BadRequest("Error:" + JsError.toFlatJson(e))
     }
   }
-
-  private def find(id: String): Option[Project] =
-    if (id == "d9227b5f-05e6-11e4-9180-cd98919f6869")
-      Option(Project(Some("d9227b5f-05e6-11e4-9180-cd98919f6869"), "d9220627-05e6-11e4-9180-6fad63942f7f", "The One Line a Day API", "An API is born", new Date(), None))
-    else None
 
 }
