@@ -4,6 +4,7 @@ import java.util.Date
 
 import com.fasterxml.uuid.Generators
 import formatters.json.DateFormatter.JsonDateFormatter
+import https.Secured
 import models.Project
 import org.joda.time.format.DateTimeFormat
 import play.api.Logger
@@ -19,27 +20,31 @@ object Projects extends Controller {
   val logger = Logger(this.getClass)
 
   // https://stackoverflow.com/questions/17040852/json-writes-in-play-2-1-1
-  // implicit val projectJson = Json.format[Project]
 
+  // implicit val projectJson = Json.format[Project]
   implicit val projectPatch = (__ \ "retiredOn").read[String]
 
   val format = DateTimeFormat.forPattern("yyyy-MM-dd")
 
-  def post = Action(parse.json) { request =>
-    request.body.validate[Project].map { p =>
+  def post = Secured.BasicAuth {
+    Action(parse.json) { request =>
+      request.body.validate[Project].map { p =>
         val projectId = Generators.timeBasedGenerator().generate().toString
         val project = Project(Some(projectId), p.userId, p.name, p.description, p.createdOn, None)
         Project.create(project)
         Ok(Json.toJson(project))
-    }.recoverTotal {
-      e => BadRequest("Error:" + JsError.toFlatJson(e))
+      }.recoverTotal {
+        e => BadRequest("Error:" + JsError.toFlatJson(e))
+      }
     }
   }
 
-  def get(id: String) = Action { request =>
-    val project = Project.find(id)
-    if (project.isEmpty) BadRequest("Invalid resource")
-    else Ok(Json.toJson(project))
+  def get(id: String) = Secured.BasicAuth {
+    Action { request =>
+      val project = Project.find(id)
+      if (project.isEmpty) BadRequest("Invalid resource")
+      else Ok(Json.toJson(project))
+    }
   }
 
   def all() = Action { request =>

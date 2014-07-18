@@ -13,6 +13,7 @@ import play.api.mvc.Results._
 object Secured {
 
   // http://www.playframework.com/documentation/2.3.x/ScalaActionsComposition
+
   def BasicAuth[A](action: Action[A]) = Action.async(action.parser) { request =>
     request.headers.get("Authorization").map { authorization =>
       decode(authorization) match {
@@ -37,19 +38,5 @@ object Secured {
 
   private def validUser(username: String, password: String): Boolean =
     username == "paullawler" && password == "password"
-
-  //  def Secured[A]()(action: Action[A] => Result) = Action { request =>
-  //    request.headers.get("Authorization").flatMap { authorization =>
-  //      authorization.split(" ").drop(1).headOption.filter { encoded =>
-  //        new String(org.apache.commons.codec.binary.Base64.decodeBase64(encoded.getBytes)).split(":").toList match {
-  //          case u :: p :: Nil => true
-  //          case _ => false
-  //        }
-  //      }.map(_ => action(request))
-  //    }.getOrElse {
-  //      Future.successful(Unauthorized.withHeaders("WWW-Authenticate" -> """Basic realm="Secured""""))
-  ////      Unauthorized.withHeaders("WWW-Authenticate" -> """Basic realm="Secured"""")
-  //    }
-  //  }
 
 }
