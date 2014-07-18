@@ -15,6 +15,10 @@ GET          /api/v1/projects/:id        controllers.Projects.get(id: String)
 PUT          /api/v1/projects/:id        controllers.Projects.put(id: String)
 PATCH        /api/v1/projects/:id        controllers.Projects.patch(id: String)
 
+#Auth
+GET          /api/v1/testauth            controllers.Application.authenticated
+
+
 
 
 
