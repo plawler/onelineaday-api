@@ -9,7 +9,7 @@ export KEY_PASSWORD=`cat conf/certs/password`
 # This should be https://example.com:9443
 JVM_OPTIONS="$JVM_OPTIONS -Dhttp.port=disabled"
 JVM_OPTIONS="$JVM_OPTIONS -Dhttps.port=9443"
-JVM_OPTIONS="$JVM_OPTIONS -Dhttps.keyStore=conf/certs/server.jks"
+JVM_OPTIONS="$JVM_OPTIONS -Dhttps.keyStore=conf/certs/serverkeystore.jks"
 JVM_OPTIONS="$JVM_OPTIONS -Dhttps.keyStorePassword=${KEY_PASSWORD}"
 JVM_OPTIONS="$JVM_OPTIONS -Dhttps.keyStoreType=JKS"
 #JVM_OPTIONS="$JVM_OPTIONS -Dhttps.keyStoreAlgorithm=RSA"
