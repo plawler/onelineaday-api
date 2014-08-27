@@ -3,7 +3,6 @@ package controllers
 
 import com.fasterxml.uuid.Generators
 import formatters.json.DateFormatter.JsonDateFormatter
-import https.Secured
 import models.Project
 import org.joda.time.format.DateTimeFormat
 import play.api.Logger
@@ -57,8 +56,7 @@ object Projects extends Controller {
 
   def put(id: String) = BasicAuth {
     Action(parse.json) { request =>
-      request.body.validate[Project].map {
-        case project =>
+      request.body.validate[Project].map { project =>
           Project.find(project.id.get) match {
             case Some(p) =>
               val updated = Project(p.id, p.userId, project.name, project.description, p.createdOn, p.retiredOn)

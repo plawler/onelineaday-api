@@ -3,7 +3,9 @@ package models
 import java.util.Date
 
 import com.fasterxml.uuid.Generators
+import org.junit.runner.RunWith
 import org.specs2.mutable.Specification
+import org.specs2.runner.JUnitRunner
 import play.api.Logger
 import play.api.test.Helpers._
 import play.api.test.{FakeApplication, WithApplication}
@@ -11,6 +13,7 @@ import play.api.test.{FakeApplication, WithApplication}
 /**
  * Created By: paullawler
  */
+@RunWith(classOf[JUnitRunner])
 class ProjectSpec extends Specification {
 
 //  val id = "d9227b5f-05e6-11e4-9180-cd98919f6869"

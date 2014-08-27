@@ -19,10 +19,6 @@ case class Project(id: Option[String], userId: String, name: String, description
   def retired: Boolean = retiredOn.nonEmpty
 }
 
-case class ProjectModel(id: UUID, userId: UUID, name: String, description: String, createdOn: Date, retiredOn: Option[Date]) {
-  def retired: Boolean = retiredOn.nonEmpty
-}
-
 object Project {
 
   //  http://heydev.com/2013/11/22/play-rest-api-contd/
