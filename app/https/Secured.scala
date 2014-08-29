@@ -1,36 +1,50 @@
 package https
 
 import play.api.Logger
-import play.api.libs.json.Json
-import play.api.libs.ws.WS
-import play.api.mvc.Action
+import play.api.libs.json.{JsError, Json}
+import play.api.libs.ws.{Response, WSResponse, WS}
+import play.api.mvc.{Result, Action}
 import play.api.Play.current
 import play.api.mvc.Results._
 import play.api.libs.concurrent.Execution.Implicits._
 
-import scala.concurrent.Future
+import scala.concurrent.{Await, Future}
 import scala.util.{Failure, Success}
+
+// for the Duration dsl
+import scala.concurrent.duration._
+import scala.language.postfixOps
 
 /**
  * Created By: paullawler
  */
 
+case class UserAccount(givenName: String, surName: String, email: String)
+
 object Secured {
+
+  implicit val fmtUserAccount = Json.format[UserAccount]
 
   // http://www.playframework.com/documentation/2.3.x/ScalaActionsComposition
   def BasicAuth[A](action: Action[A]) = Action.async(action.parser) { request =>
     request.headers.get("Authorization").map { authorization =>
-      decode(authorization) match {
-        case Some((u, p)) if authenticateUser(u, p) => action(request)
-//          Logger.info(s"Looking up User with $u/$p")
-//          authenticateUser(u, p).onComplete {
-//            case Success(user) => action(request)
-//            case Failure(ex) => Future.successful(Unauthorized("User not authorized"))
-//          }
-        case None => Future.successful(Unauthorized.withHeaders("WWW-Authenticate" -> """Basic realm="Secured""""))
+      decode(authorization) match { // decode the Auth header (Base64)
+        case Some((username, password)) => // if credentials are presented...
+          try {
+            val account = authenticate(username, password) // authenticate with creds
+            action(request) // use the account at this point...
+          } catch {
+            case e: Exception => // in the event of an exception
+              Logger.info(s"Failed authentication for credentials of $username/$password")
+              Future.successful(Unauthorized(e.getMessage))
+          }
+        case None =>
+          Logger.info("No credentials provided in Authorization header")
+          Future.successful(Unauthorized.withHeaders("WWW-Authenticate" -> """Basic realm="Secured""""))
       }
     } getOrElse {
-      Future.successful(Unauthorized("User not authorized"))
+      Logger.info("No Authorization header")
+      Future.successful(Unauthorized("No authorization credentials were provided"))
     }
   }
 
@@ -44,22 +58,39 @@ object Secured {
     }
   }
 
-  private def authenticateUser(username: String, password: String): Boolean = {
-    //    username == "paullawler" && password == "password"
+  private def authenticate(username: String, password: String): UserAccount = {
     val jsonCreds = Json.obj("username" -> username, "password" -> password)
-    val result = WS.url("http://localhost:9000/authenticate").post(jsonCreds).map { response =>
-//      (response.json \ "username").as[String]
-      response.json match {
-        case _ => true
+    val account = WS.url("http://localhost:9000/authenticate").post(jsonCreds).map { response =>
+      try {
+        response.json.validate[UserAccount].get
+      } catch {
+        case e: Exception => throw new Exception("Failed authentication")
       }
     }
-    var foo = false
-    result.onComplete {
-      case Success(r) => foo = true
-//      case Failure(ex) => false
+    Await.result(account, 10 seconds) // this bloooooows but I am not sure how to handle without blocking
+  }
+
+  /** the following is to help me retain my sanity with this Future stuff */
+
+  private def fooTest() = {
+    try {
+      val account = authenticate2("foo", "bar")
+      account.onSuccess {
+        case a => println(a)
+      }
+    } catch {
+      case e: Exception => println(e.getMessage)
     }
-    foo
-    //    result.map(response => Ok(response.json.toString()))
+  }
+
+  private def authenticate2(username: String, password: String): Future[UserAccount] = {
+    val jsonCreds = Json.obj("username" -> username, "password" -> password)
+    val account = WS.url("http://localhost:9000/authenticate").post(jsonCreds).map { response =>
+      val result = response.json.validate[UserAccount]
+      if (result.isSuccess) result.get
+      else throw new Exception
+    }
+    account.withFilter(a => a.isInstanceOf[UserAccount])
   }
 
 }
