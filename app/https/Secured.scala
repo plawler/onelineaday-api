@@ -74,8 +74,7 @@ object Secured {
 
   private def fooTest() = {
     try {
-      val account = authenticate2("foo", "bar")
-      account.onSuccess {
+      authenticate2("foo", "bar").onSuccess {
         case a => println(a)
       }
     } catch {
