@@ -29,7 +29,7 @@ class ProjectSpec extends Specification {
 
       val project = Project.find(projectId).get
       project mustNotEqual None
-      project.name mustEqual("Test Project")
+      project.name mustEqual "Test Project"
 
       val modifiedProject = Project(project.id, project.userId, project.name + " Updated", project.description, project.createdOn, None)
       val update = Project.update(modifiedProject)

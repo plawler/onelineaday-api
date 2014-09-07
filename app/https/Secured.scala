@@ -34,7 +34,7 @@ object Secured {
             val account = authenticate(username, password) // authenticate with creds
             action(request) // use the account at this point...
           } catch {
-            case e: Exception => // in the event of an exception
+            case e: Exception => // in the event of an authentication exception
               Logger.info(s"Failed authentication for credentials of $username/$password")
               Future.successful(Unauthorized(e.getMessage))
           }
@@ -64,7 +64,8 @@ object Secured {
       try {
         response.json.validate[UserAccount].get
       } catch {
-        case e: Exception => throw new Exception("Failed authentication")
+        case e: Exception =>
+          throw new Exception("Failed authentication")
       }
     }
     Await.result(account, 10 seconds) // this bloooooows but I am not sure how to handle without blocking

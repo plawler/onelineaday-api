@@ -14,5 +14,7 @@ libraryDependencies ++= Seq(
   cache,
   ws,
   "postgresql" % "postgresql" % "9.1-901.jdbc4",
-  "com.fasterxml.uuid" % "java-uuid-generator" % "3.1.3"
+  "com.fasterxml.uuid" % "java-uuid-generator" % "3.1.3",
+  "com.github.tomakehurst" % "wiremock" % "1.47",
+  "net.databinder.dispatch" %% "dispatch-core" % "0.11.0" % "test"
 )
