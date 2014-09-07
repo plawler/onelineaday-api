@@ -1,12 +1,9 @@
-import java.util.Date
 import java.util.concurrent.TimeUnit
 
-import com.fasterxml.uuid.Generators
-import models.Project
 import play.api.libs.json.Json
 import play.api.libs.ws.WS
 import play.api.test.Helpers._
-import play.api.test.{FakeHeaders, FakeRequest, WithApplication, FakeApplication}
+import play.api.test.WithApplication
 
 import scala.concurrent.Await
 import scala.concurrent.ExecutionContext.Implicits.global
