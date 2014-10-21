@@ -44,10 +44,7 @@ class WireMockSpec extends Specification {
       WireMock.configureFor(Host, Port)
 
       val path = "/authenticate"
-      stubFor(post(urlEqualTo(path))
-        .willReturn(
-          aResponse()
-            .withStatus(200)))
+      stubFor(post(urlEqualTo(path)).willReturn(aResponse().withStatus(200)))
 
       val jsonCreds = Json.obj("username" -> "test", "password" -> "password")
       val responseFuture = WS.url(s"http://$Host:$Port$path").post(jsonCreds)

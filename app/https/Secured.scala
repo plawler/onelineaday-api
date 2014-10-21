@@ -68,7 +68,7 @@ object Secured {
           throw new Exception("Failed authentication")
       }
     }
-    Await.result(account, 10 seconds) // this bloooooows but I am not sure how to handle without blocking
+    Await.result(account, 5 seconds) // this bloooooows but I am not sure how to handle without blocking
   }
 
   /** the following is to help me retain my sanity with this Future stuff */
